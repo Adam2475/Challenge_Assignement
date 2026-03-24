@@ -1,0 +1,11 @@
+DB schema | OK
+
+relations within entities | OK
+
+implement CRUD
+
+endpoint to give back every task with a specific tag
+
+endpoint to give back every task of a specific project
+
+dockerize application
