@@ -33,6 +33,7 @@ export const createTask = async (request: Request, response: Response) => {
     const description = request.body?.description ?? null;
     const hours = request.body?.hours;
 
+    // check if request body parameters are of the correct type
     if (typeof title !== "string" || typeof description !== "string" || typeof hours !== "number") {
         return response.status(400).json({
             error: "Invalid payload. Expected { title: string, description: string, hours: number }"
@@ -52,6 +53,7 @@ export const createTask = async (request: Request, response: Response) => {
 export const createTag = async (request: Request, response: Response) => {
     const name = request.body?.name;
 
+    // check if the name is a valid string
     if (typeof name !== "string" || name.trim() === "") {
         return response.status(400).json({
             error: "Invalid payload. Expected { name: string }"
@@ -119,21 +121,24 @@ export const getTask = async (request: Request, response: Response) => {
     }
 };
 
+// return all the tags linked to a specific task
 export const getTaskTags = async (request: Request, response: Response) => {
     const taskId = Number(request.params.id);
 
+    // check if passed id is a valid positive integer
     if (!Number.isInteger(taskId) || taskId <= 0) {
         return response.status(400).json({ error: "Invalid task id" });
     }
 
     try {
         const [taskRows] = await pool.query("SELECT id FROM tasks WHERE id = ?", [taskId]);
+        // check if task with the given id exists
         if ((taskRows as any[]).length === 0) {
             return response.status(404).json({ error: "Task not found" });
         }
 
         const [tags] = await pool.query(
-            "SELECT t.* FROM tags t JOIN task_tags tt ON t.id = tt.tag_id WHERE tt.task_id = ?",
+            "SELECT tags.* FROM tags JOIN task_tags ON tags.id = task_tags.tag_id WHERE task_tags.task_id = ?",
             [taskId]
         );
         response.json(tags);
@@ -152,13 +157,40 @@ export const getProjectTasks = async (request: Request, response: Response) => {
 
     try {
         const [projectRows] = await pool.query("SELECT id FROM projects WHERE id = ?", [projectId]);
+        // check if project with the given id exists
         if ((projectRows as any[]).length === 0) {
             return response.status(404).json({ error: "Project not found" });
         }
 
+        // tasks.* = all tasks from tasks table
+        // JOIN between tasks and project_tasks on matching task id
         const [tasks] = await pool.query(
-            "SELECT t.* FROM tasks t JOIN project_tasks pt ON t.id = pt.task_id WHERE pt.project_id = ?",
+            "SELECT tasks.* FROM tasks JOIN project_tasks ON tasks.id = project_tasks.task_id WHERE project_tasks.project_id = ?",
             [projectId]
+        );
+        response.json(tasks);
+    } catch (error) {
+        response.status(500).json({ error: String(error) });
+    }
+};
+
+export const getTagTasks = async (request: Request, response: Response) => {
+    const tagId = Number(request.params.id);
+
+    // check if passed id is a valid positive integer
+    if (!Number.isInteger(tagId) || tagId <= 0) {
+        return response.status(400).json({ error: "Invalid tag id" });
+    }
+
+    try {
+        const [tagRows] = await pool.query("SELECT id FROM tags WHERE id = ?", [tagId]);
+        if ((tagRows as any[]).length === 0) {
+            return response.status(404).json({ error: "Tag not found" });
+        }
+
+        const [tasks] = await pool.query(
+            "SELECT tasks.* FROM tasks JOIN task_tags ON tasks.id = task_tags.task_id WHERE task_tags.tag_id = ?",
+            [tagId]
         );
         response.json(tasks);
     } catch (error) {
@@ -177,10 +209,12 @@ export const updateProject = async (request: Request, response: Response) => {
     const description = request.body?.description ?? null;
     const hoursUsed = request.body?.hours_used;
 
+    // check if passed id is a valid positive integer
     if (!Number.isInteger(id) || id <= 0) {
         return response.status(400).json({ error: "Invalid project id" });
     }
 
+    // check if request body parameters are of the correct type
     if (
         typeof name !== "string" ||
         typeof budget !== "number" ||
@@ -198,6 +232,7 @@ export const updateProject = async (request: Request, response: Response) => {
             [name, budget, description, hoursUsed, id]
         );
 
+        // if 0 rows are affected, no project was found
         if ((result as any).affectedRows === 0) {
             return response.status(404).json({ error: "Project not found" });
         }
@@ -214,10 +249,12 @@ export const updateTask = async (request: Request, response: Response) => {
     const description = request.body?.description ?? null;
     const hours = request.body?.hours;
 
+    // check if passed id is a valid positive integer
     if (!Number.isInteger(id) || id <= 0) {
         return response.status(400).json({ error: "Invalid task id" });
     }
 
+    // check if request body parameters are of the correct type
     if (
         typeof title !== "string" ||
         !(typeof description === "string" || description === null) ||
@@ -234,6 +271,7 @@ export const updateTask = async (request: Request, response: Response) => {
             [title, description, hours, id]
         );
 
+        // if 0 rows are affected, no task was found
         if ((result as any).affectedRows === 0) {
             return response.status(404).json({ error: "Task not found" });
         }
@@ -248,10 +286,12 @@ export const addTagsToTask = async (request: Request, response: Response) => {
     const taskId = Number(request.params.id);
     const tagIdsInput = request.body?.tag_ids;
 
+    // check if passed id is a valid positive integer
     if (!Number.isInteger(taskId) || taskId <= 0) {
         return response.status(400).json({ error: "Invalid task id" });
     }
 
+    // check if request body parameters are of the correct type
     if (!Array.isArray(tagIdsInput) || tagIdsInput.length === 0) {
         return response.status(400).json({
             error: "Invalid payload. Expected { tag_ids: number[] }"
@@ -272,10 +312,12 @@ export const addTagsToTask = async (request: Request, response: Response) => {
 
     try {
         const [taskRows] = await pool.query("SELECT id FROM tasks WHERE id = ?", [taskId]);
+        // check if task with the given id exists
         if ((taskRows as any[]).length === 0) {
             return response.status(404).json({ error: "Task not found" });
         }
 
+        // select all tags with the given ids and check if they exist
         const [tagRows] = await pool.query("SELECT id FROM tags WHERE id IN (?)", [tagIds]);
         const existingTagIds = new Set((tagRows as any[]).map((row) => row.id));
         const missingTagIds = tagIds.filter((id) => !existingTagIds.has(id));
@@ -305,10 +347,12 @@ export const addTasksToProject = async (request: Request, response: Response) =>
     const projectId = Number(request.params.id);
     const taskIdsInput = request.body?.task_ids;
 
+    // check if passed id is a valid positive integer
     if (!Number.isInteger(projectId) || projectId <= 0) {
         return response.status(400).json({ error: "Invalid project id" });
     }
 
+    // check if request body parameters are of the correct type
     if (!Array.isArray(taskIdsInput) || taskIdsInput.length === 0) {
         return response.status(400).json({
             error: "Invalid payload. Expected { task_ids: number[] }"
@@ -362,6 +406,7 @@ export const addTasksToProject = async (request: Request, response: Response) =>
 export const deleteProject = async (request: Request, response: Response) => {
     const id = Number(request.params.id);
 
+    // check if passed id is a valid positive integer
     if (!Number.isInteger(id) || id <= 0) {
         return response.status(400).json({ error: "Invalid project id" });
     }
@@ -402,6 +447,7 @@ export const deleteTask = async (request: Request, response: Response) => {
 export const deleteTag = async (request: Request, response: Response) => {
     const id = Number(request.params.id);
 
+    // check if passed id is a valid positive integer
     if (!Number.isInteger(id) || id <= 0) {
         return response.status(400).json({ error: "Invalid tag id" });
     }

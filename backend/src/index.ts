@@ -13,6 +13,7 @@ import {
 	getProject,
 	getTaskTags,
 	getProjectTasks,
+	getTagTasks,
 	updateProject,
 	updateTask,
 	addTagsToTask,
@@ -38,6 +39,7 @@ app.get("/read_project/:id", getProject);
 app.get("/read_task/:id", getTask);
 app.get("/read_task_tags/:id", getTaskTags);
 app.get("/read_project_tasks/:id", getProjectTasks);
+app.get("/read_tag_tasks/:id", getTagTasks);
 app.put("/update_project/:id", updateProject);
 app.put("/update_task/:id", updateTask);
 app.post("/add_task_tags/:id", addTagsToTask);

@@ -28,3 +28,4 @@ The idea was to combine the CREATE and the PATCH methods in the task creation fo
 
 that approach forced me to build CRUD operation methods for the tags too.
 
+to get all the tasks with a specified tag i ran a JOIN query on the junction table to get all the fields where the ID is matching the passed parameter ID.

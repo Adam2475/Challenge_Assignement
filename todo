@@ -4,8 +4,8 @@
 
 3) implement CRUD | OK
 
-4) endpoint to give back every task with a specific tag
+4) endpoint to give back every task with a specific tag | OK
 
-5) endpoint to give back every task of a specific project
+5) endpoint to give back every task of a specific project | OK
 
 6) dockerize application
