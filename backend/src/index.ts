@@ -1,7 +1,7 @@
 "use strict";
 
 import express from "express";
-import pool from "./db";
+// import pool from "./db";
 import {
 	createProject,
 	readProjects,
@@ -14,6 +14,7 @@ import {
 	updateProject,
 	updateTask,
 	addTagsToTask,
+	addTasksToProject,
 	deleteProject,
 	deleteTask,
 	deleteTag
@@ -35,7 +36,8 @@ app.get("/read_project/:id", getProject);
 app.get("/read_task/:id", getTask);
 app.put("/update_project/:id", updateProject);
 app.put("/update_task/:id", updateTask);
-app.patch("/add_task_tags/:id", addTagsToTask);
+app.post("/add_task_tags/:id", addTagsToTask);
+app.post("/add_project_tasks/:id", addTasksToProject);
 app.delete("/delete_project/:id", deleteProject);
 app.delete("/delete_task/:id", deleteTask);
 app.delete("/delete_tag/:id", deleteTag);

@@ -253,6 +253,60 @@ export const addTagsToTask = async (request: Request, response: Response) => {
     }
 };
 
+export const addTasksToProject = async (request: Request, response: Response) => {
+    const projectId = Number(request.params.id);
+    const taskIdsInput = request.body?.task_ids;
+
+    if (!Number.isInteger(projectId) || projectId <= 0) {
+        return response.status(400).json({ error: "Invalid project id" });
+    }
+
+    if (!Array.isArray(taskIdsInput) || taskIdsInput.length === 0) {
+        return response.status(400).json({
+            error: "Invalid payload. Expected { task_ids: number[] }"
+        });
+    }
+
+    const parsedTaskIds = taskIdsInput.map((value) => Number(value));
+    const taskIds = Array.from(new Set(parsedTaskIds));
+
+    if (taskIds.some((id) => !Number.isInteger(id) || id <= 0)) {
+        return response.status(400).json({
+            error: "Invalid payload. task_ids must contain only positive integers"
+        });
+    }
+
+    try {
+        const [projectRows] = await pool.query("SELECT id FROM projects WHERE id = ?", [projectId]);
+        if ((projectRows as any[]).length === 0) {
+            return response.status(404).json({ error: "Project not found" });
+        }
+
+        const [taskRows] = await pool.query("SELECT id FROM tasks WHERE id IN (?)", [taskIds]);
+        const existingTaskIds = new Set((taskRows as any[]).map((row) => row.id));
+        const missingTaskIds = taskIds.filter((id) => !existingTaskIds.has(id));
+
+        if (missingTaskIds.length > 0) {
+            return response.status(404).json({
+                error: "Some tasks were not found",
+                missing_task_ids: missingTaskIds
+            });
+        }
+
+        for (const taskId of taskIds) {
+            await pool.query("INSERT IGNORE INTO project_tasks (project_id, task_id) VALUES (?, ?)", [projectId, taskId]);
+        }
+
+        response.json({
+            message: "Tasks linked to project",
+            project_id: projectId,
+            task_ids: taskIds
+        });
+    } catch (error) {
+        response.status(500).json({ error: String(error) });
+    }
+};
+
 ////////////
 // DELETE
 ////////////

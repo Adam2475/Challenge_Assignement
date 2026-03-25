@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
+// import pool from "./db";
 const crud_1 = require("./crud");
 const app = (0, express_1.default)();
 // adds middleware to parse incoming JSON request
@@ -20,7 +21,8 @@ app.get("/read_project/:id", crud_1.getProject);
 app.get("/read_task/:id", crud_1.getTask);
 app.put("/update_project/:id", crud_1.updateProject);
 app.put("/update_task/:id", crud_1.updateTask);
-app.patch("/add_task_tags/:id", crud_1.addTagsToTask);
+app.post("/add_task_tags/:id", crud_1.addTagsToTask);
+app.post("/add_project_tasks/:id", crud_1.addTasksToProject);
 app.delete("/delete_project/:id", crud_1.deleteProject);
 app.delete("/delete_task/:id", crud_1.deleteTask);
 app.delete("/delete_tag/:id", crud_1.deleteTag);

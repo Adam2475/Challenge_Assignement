@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteTag = exports.deleteTask = exports.deleteProject = exports.addTagsToTask = exports.updateTask = exports.updateProject = exports.getTask = exports.readTags = exports.readTasks = exports.getProject = exports.readProjects = exports.createTag = exports.createTask = exports.createProject = void 0;
+exports.deleteTag = exports.deleteTask = exports.deleteProject = exports.addTasksToProject = exports.addTagsToTask = exports.updateTask = exports.updateProject = exports.getTask = exports.readTags = exports.readTasks = exports.getProject = exports.readProjects = exports.createTag = exports.createTask = exports.createProject = void 0;
 const db_1 = __importDefault(require("./db"));
 ///////////
 // CREATE
@@ -227,6 +227,52 @@ const addTagsToTask = async (request, response) => {
     }
 };
 exports.addTagsToTask = addTagsToTask;
+const addTasksToProject = async (request, response) => {
+    const projectId = Number(request.params.id);
+    const taskIdsInput = request.body?.task_ids;
+    if (!Number.isInteger(projectId) || projectId <= 0) {
+        return response.status(400).json({ error: "Invalid project id" });
+    }
+    if (!Array.isArray(taskIdsInput) || taskIdsInput.length === 0) {
+        return response.status(400).json({
+            error: "Invalid payload. Expected { task_ids: number[] }"
+        });
+    }
+    const parsedTaskIds = taskIdsInput.map((value) => Number(value));
+    const taskIds = Array.from(new Set(parsedTaskIds));
+    if (taskIds.some((id) => !Number.isInteger(id) || id <= 0)) {
+        return response.status(400).json({
+            error: "Invalid payload. task_ids must contain only positive integers"
+        });
+    }
+    try {
+        const [projectRows] = await db_1.default.query("SELECT id FROM projects WHERE id = ?", [projectId]);
+        if (projectRows.length === 0) {
+            return response.status(404).json({ error: "Project not found" });
+        }
+        const [taskRows] = await db_1.default.query("SELECT id FROM tasks WHERE id IN (?)", [taskIds]);
+        const existingTaskIds = new Set(taskRows.map((row) => row.id));
+        const missingTaskIds = taskIds.filter((id) => !existingTaskIds.has(id));
+        if (missingTaskIds.length > 0) {
+            return response.status(404).json({
+                error: "Some tasks were not found",
+                missing_task_ids: missingTaskIds
+            });
+        }
+        for (const taskId of taskIds) {
+            await db_1.default.query("INSERT IGNORE INTO project_tasks (project_id, task_id) VALUES (?, ?)", [projectId, taskId]);
+        }
+        response.json({
+            message: "Tasks linked to project",
+            project_id: projectId,
+            task_ids: taskIds
+        });
+    }
+    catch (error) {
+        response.status(500).json({ error: String(error) });
+    }
+};
+exports.addTasksToProject = addTasksToProject;
 ////////////
 // DELETE
 ////////////

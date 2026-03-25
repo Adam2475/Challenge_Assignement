@@ -24,5 +24,7 @@ to implement the tags in a task as a list of strings i implemented
 a many to many relationship handled by the task_tags junction table.
 
 i decided to handle the tag insertion into a task using a PATCH method to modify only specific fields of the DB row, the method uses "INSERT IGNORE" in the query to skip the duplicate entries.
+The idea was to combine the CREATE and the PATCH methods in the task creation form.
 
 that approach forced me to build CRUD operation methods for the tags too.
+
