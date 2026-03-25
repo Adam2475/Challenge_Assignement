@@ -11,6 +11,8 @@ import {
 	readTags,
 	getTask,
 	getProject,
+	getTaskTags,
+	getProjectTasks,
 	updateProject,
 	updateTask,
 	addTagsToTask,
@@ -34,6 +36,8 @@ app.get("/read_tasks", readTasks);
 app.get("/read_tags", readTags);
 app.get("/read_project/:id", getProject);
 app.get("/read_task/:id", getTask);
+app.get("/read_task_tags/:id", getTaskTags);
+app.get("/read_project_tasks/:id", getProjectTasks);
 app.put("/update_project/:id", updateProject);
 app.put("/update_task/:id", updateTask);
 app.post("/add_task_tags/:id", addTagsToTask);

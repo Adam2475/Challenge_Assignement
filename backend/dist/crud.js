@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteTag = exports.deleteTask = exports.deleteProject = exports.addTasksToProject = exports.addTagsToTask = exports.updateTask = exports.updateProject = exports.getTask = exports.readTags = exports.readTasks = exports.getProject = exports.readProjects = exports.createTag = exports.createTask = exports.createProject = void 0;
+exports.deleteTag = exports.deleteTask = exports.deleteProject = exports.addTasksToProject = exports.addTagsToTask = exports.updateTask = exports.updateProject = exports.getProjectTasks = exports.getTaskTags = exports.getTask = exports.readTags = exports.readTasks = exports.getProject = exports.readProjects = exports.createTag = exports.createTask = exports.createProject = void 0;
 const db_1 = __importDefault(require("./db"));
 ///////////
 // CREATE
@@ -13,6 +13,7 @@ const createProject = async (request, response) => {
     const budget = request.body?.budget;
     const description = request.body?.description ?? null;
     const hoursUsed = request.body?.hours_used;
+    // check if request body parameters are of the correct type
     if (typeof name !== "string" || typeof budget !== "number" || typeof hoursUsed !== "number") {
         return response.status(400).json({
             error: "Invalid payload. Expected { name: string, budget: number, hours_used: number, description?: string }"
@@ -120,6 +121,43 @@ const getTask = async (request, response) => {
     }
 };
 exports.getTask = getTask;
+const getTaskTags = async (request, response) => {
+    const taskId = Number(request.params.id);
+    if (!Number.isInteger(taskId) || taskId <= 0) {
+        return response.status(400).json({ error: "Invalid task id" });
+    }
+    try {
+        const [taskRows] = await db_1.default.query("SELECT id FROM tasks WHERE id = ?", [taskId]);
+        if (taskRows.length === 0) {
+            return response.status(404).json({ error: "Task not found" });
+        }
+        const [tags] = await db_1.default.query("SELECT t.* FROM tags t JOIN task_tags tt ON t.id = tt.tag_id WHERE tt.task_id = ?", [taskId]);
+        response.json(tags);
+    }
+    catch (error) {
+        response.status(500).json({ error: String(error) });
+    }
+};
+exports.getTaskTags = getTaskTags;
+const getProjectTasks = async (request, response) => {
+    const projectId = Number(request.params.id);
+    // check if passed id is a valid positive integer
+    if (!Number.isInteger(projectId) || projectId <= 0) {
+        return response.status(400).json({ error: "Invalid project id" });
+    }
+    try {
+        const [projectRows] = await db_1.default.query("SELECT id FROM projects WHERE id = ?", [projectId]);
+        if (projectRows.length === 0) {
+            return response.status(404).json({ error: "Project not found" });
+        }
+        const [tasks] = await db_1.default.query("SELECT t.* FROM tasks t JOIN project_tasks pt ON t.id = pt.task_id WHERE pt.project_id = ?", [projectId]);
+        response.json(tasks);
+    }
+    catch (error) {
+        response.status(500).json({ error: String(error) });
+    }
+};
+exports.getProjectTasks = getProjectTasks;
 ////////////
 // UPDATE
 ////////////

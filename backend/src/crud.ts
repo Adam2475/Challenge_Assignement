@@ -11,6 +11,7 @@ export const createProject = async (request: Request, response: Response) => {
     const description = request.body?.description ?? null;
     const hoursUsed = request.body?.hours_used;
 
+    // check if request body parameters are of the correct type
     if (typeof name !== "string" || typeof budget !== "number" || typeof hoursUsed !== "number") {
         return response.status(400).json({
             error: "Invalid payload. Expected { name: string, budget: number, hours_used: number, description?: string }"
@@ -113,6 +114,53 @@ export const getTask = async (request: Request, response: Response) => {
     try {
         const [rows] = await pool.query("SELECT * FROM tasks WHERE id = ?", [request.params.id]);
         response.json(rows);
+    } catch (error) {
+        response.status(500).json({ error: String(error) });
+    }
+};
+
+export const getTaskTags = async (request: Request, response: Response) => {
+    const taskId = Number(request.params.id);
+
+    if (!Number.isInteger(taskId) || taskId <= 0) {
+        return response.status(400).json({ error: "Invalid task id" });
+    }
+
+    try {
+        const [taskRows] = await pool.query("SELECT id FROM tasks WHERE id = ?", [taskId]);
+        if ((taskRows as any[]).length === 0) {
+            return response.status(404).json({ error: "Task not found" });
+        }
+
+        const [tags] = await pool.query(
+            "SELECT t.* FROM tags t JOIN task_tags tt ON t.id = tt.tag_id WHERE tt.task_id = ?",
+            [taskId]
+        );
+        response.json(tags);
+    } catch (error) {
+        response.status(500).json({ error: String(error) });
+    }
+};
+
+export const getProjectTasks = async (request: Request, response: Response) => {
+    const projectId = Number(request.params.id);
+
+    // check if passed id is a valid positive integer
+    if (!Number.isInteger(projectId) || projectId <= 0) {
+        return response.status(400).json({ error: "Invalid project id" });
+    }
+
+    try {
+        const [projectRows] = await pool.query("SELECT id FROM projects WHERE id = ?", [projectId]);
+        if ((projectRows as any[]).length === 0) {
+            return response.status(404).json({ error: "Project not found" });
+        }
+
+        const [tasks] = await pool.query(
+            "SELECT t.* FROM tasks t JOIN project_tasks pt ON t.id = pt.task_id WHERE pt.project_id = ?",
+            [projectId]
+        );
+        response.json(tasks);
     } catch (error) {
         response.status(500).json({ error: String(error) });
     }

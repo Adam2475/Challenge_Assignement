@@ -19,6 +19,8 @@ app.get("/read_tasks", crud_1.readTasks);
 app.get("/read_tags", crud_1.readTags);
 app.get("/read_project/:id", crud_1.getProject);
 app.get("/read_task/:id", crud_1.getTask);
+app.get("/read_task_tags/:id", crud_1.getTaskTags);
+app.get("/read_project_tasks/:id", crud_1.getProjectTasks);
 app.put("/update_project/:id", crud_1.updateProject);
 app.put("/update_task/:id", crud_1.updateTask);
 app.post("/add_task_tags/:id", crud_1.addTagsToTask);
