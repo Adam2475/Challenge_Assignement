@@ -6,13 +6,17 @@ import {
 	createProject,
 	readProjects,
 	createTask,
+	createTag,
 	readTasks,
+	readTags,
 	getTask,
 	getProject,
 	updateProject,
 	updateTask,
+	addTagsToTask,
 	deleteProject,
-	deleteTask
+	deleteTask,
+	deleteTag
 } from "./crud";
 
 const app = express();
@@ -23,13 +27,17 @@ app.use(express.json());
 // create endpoint and bind to a handler functions
 app.post("/create_project", createProject);
 app.post("/create_task", createTask);
+app.post("/create_tag", createTag);
 app.get("/read_projects", readProjects);
 app.get("/read_tasks", readTasks);
+app.get("/read_tags", readTags);
 app.get("/read_project/:id", getProject);
 app.get("/read_task/:id", getTask);
 app.put("/update_project/:id", updateProject);
 app.put("/update_task/:id", updateTask);
+app.patch("/add_task_tags/:id", addTagsToTask);
 app.delete("/delete_project/:id", deleteProject);
 app.delete("/delete_task/:id", deleteTask);
+app.delete("/delete_tag/:id", deleteTag);
 
 app.listen(3000, () => console.log("Express server started"));
