@@ -1,12 +1,12 @@
 # Technologies
 
-- Angular
-- Node.js
-- Pm2
-- Express
-- MySql
-- Docker
-- Postman
+- Angular (Frontend)
+- Node.js (Backend)
+- Express (Backend Framework)
+- Pm2 (Dev Server)
+- MySql (Database)
+- Docker (Containerization)
+- Postman (API testing)
 
 # Pm2
 

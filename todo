@@ -1,11 +1,11 @@
-DB schema | OK
+1) DB schema | OK
 
-relations within entities | OK
+2) relations within entities | OK
 
-implement CRUD
+3) implement CRUD
 
-endpoint to give back every task with a specific tag
+4) endpoint to give back every task with a specific tag
 
-endpoint to give back every task of a specific project
+5) endpoint to give back every task of a specific project
 
-dockerize application
+6) dockerize application
