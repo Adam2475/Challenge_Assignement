@@ -1,0 +1,36 @@
+<main class="landing">
+	<section class="hero">
+		<p class="eyebrow">Project Dashboard</p>
+		<h1>All Projects</h1>
+		<p class="subtitle">A quick overview of budgets, workload, and project scope.</p>
+		<p class="subtitle" *ngIf="!isLoading() && !errorMessage()">Loaded projects: {{ projects().length }}</p>
+	</section>
+
+	<p class="state" *ngIf="isLoading()">Loading projects...</p>
+	<div class="state error" *ngIf="!isLoading() && errorMessage()">
+		<p>{{ errorMessage() }}</p>
+		<button type="button" (click)="loadProjects()">Retry</button>
+	</div>
+	<p class="state" *ngIf="!isLoading() && !errorMessage() && projects().length === 0">No projects found.</p>
+	<section class="project-grid" *ngIf="!isLoading() && !errorMessage() && projects().length > 0">
+		<article class="card" *ngFor="let project of projects(); trackBy: trackByProjectId">
+			<header>
+				<p class="project-id">Project #{{ project.id }}</p>
+				<h2>{{ project.name }}</h2>
+			</header>
+
+			<p class="description">{{ project.description || 'No description provided.' }}</p>
+
+			<dl class="meta">
+				<div>
+					<dt>Budget</dt>
+					<dd>${{ project.budget }}</dd>
+				</div>
+				<div>
+					<dt>Hours Used</dt>
+					<dd>{{ project.hours_used }}h</dd>
+				</div>
+			</dl>
+		</article>
+	</section>
+</main>

@@ -23,9 +23,15 @@ i started by defining the main todo's for the project and ended up with a short 
 to implement the tags in a task as a list of strings i implemented
 a many to many relationship handled by the task_tags junction table.
 
-i decided to handle the tag insertion into a task using a PATCH method to modify only specific fields of the DB row, the method uses "INSERT IGNORE" in the query to skip the duplicate entries.
-The idea was to combine the CREATE and the PATCH methods in the task creation form.
-
-that approach forced me to build CRUD operation methods for the tags too.
-
 to get all the tasks with a specified tag i ran a JOIN query on the junction table to get all the fields where the ID is matching the passed parameter ID.
+
+# Boot
+
+## only development
+
+- use docker compose up to start the mysql service
+(check for active istances of mysql if not starting)
+- seed the mysql database using the seeding script with docker exec
+(documentation in database)
+- run backend with npm install & npm run dev
+- run frontend with npm start | ng serve

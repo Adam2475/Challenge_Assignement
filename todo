@@ -9,3 +9,7 @@
 5) endpoint to give back every task of a specific project | OK
 
 6) dockerize application
+
+7) OPTIONAL: build frontend interface
+
+8) OPTIONAL: build API documentation with swagger

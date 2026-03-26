@@ -26,6 +26,25 @@ import {
 const app = express();
 // adds middleware to parse incoming JSON request
 // bodies and make them available under request.body
+app.use((request, response, next) => {
+	const origin = request.headers.origin;
+	if (origin && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+		response.setHeader("Access-Control-Allow-Origin", origin);
+	}
+	response.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+	response.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+	response.setHeader("Vary", "Origin");
+	next();
+});
+
+app.use((request, response, next) => {
+	if (request.method === "OPTIONS") {
+		response.sendStatus(204);
+	} else {
+		next();
+	}
+});
+
 app.use(express.json());
 
 // create endpoint and bind to a handler functions
